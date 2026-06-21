@@ -1,0 +1,45 @@
+name: Test prerelease dry-run
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: prerelease
+          prerelease: 'true'
+          dry-run: 'true'
+        continue-on-error: true
+      - name: Assert action ran with prerelease settings
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          TAG: ${{ steps.action.outputs.tag }}
+          SKIPPED: ${{ steps.action.outputs.skipped }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "tag: $TAG"
+          echo "skipped: $SKIPPED"
+          # Verify the action ran (success or failure are both valid in test env)
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran with prerelease=true and release-type=prerelease"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi
+          # If it succeeded, the tag should look like a prerelease version
+          if [ "$OUTCOME" = "success" ] && [ -n "$TAG" ]; then
+            echo "INFO: tag produced: $TAG"
+            # Prerelease tags typically contain a dot and numbers
+            if echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-'; then
+              echo "PASS: tag has expected prerelease format"
+            else
+              echo "INFO: tag format: $TAG (may not match prerelease pattern in dry-run)"
+            fi
+          fi

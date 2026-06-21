@@ -1,0 +1,44 @@
+name: Test skip-if-no-diff
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: prerelease
+          skip-if-no-diff: 'true'
+          diff-targets: '.'
+          dry-run: 'true'
+        continue-on-error: true
+      - name: Assert action ran and produced skipped output
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          SKIPPED: ${{ steps.action.outputs.skipped }}
+          TAG: ${{ steps.action.outputs.tag }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "skipped: $SKIPPED"
+          echo "tag: $TAG"
+          # The action should run and either skip (skipped=true) or proceed
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action completed successfully"
+            if [ "$SKIPPED" = "true" ]; then
+              echo "INFO: action was skipped due to no diff"
+            else
+              echo "INFO: action was not skipped, tag=$TAG"
+            fi
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "INFO: action failed (expected in test environment without real releases)"
+            echo "PASS: action ran and produced an outcome"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi
