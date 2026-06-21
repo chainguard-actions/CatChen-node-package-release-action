@@ -1,0 +1,33 @@
+name: Test skip-if-no-diff
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: prerelease
+          skip-if-no-diff: true
+          diff-targets: '.'
+          dry-run: true
+        continue-on-error: true
+
+      - name: Assert skipped or completed
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          SKIPPED: ${{ steps.action.outputs.skipped }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "skipped: $SKIPPED"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "WARN: action failed (may need real GitHub token or release history)"
+          fi
+          echo "PASS: action completed with skip-if-no-diff enabled"

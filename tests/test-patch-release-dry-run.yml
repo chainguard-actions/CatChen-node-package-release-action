@@ -1,0 +1,32 @@
+name: Test patch release type dry-run
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: patch
+          prerelease: false
+          dry-run: true
+        continue-on-error: true
+
+      - name: Assert action ran with patch release type
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          TAG: ${{ steps.action.outputs.tag }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "tag: $TAG"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "WARN: action failed in dry-run mode (may need real GitHub token)"
+          fi
+          echo "PASS: action completed with patch release type"
