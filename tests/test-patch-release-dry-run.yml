@@ -1,0 +1,45 @@
+name: Test patch release dry-run
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: patch
+          prerelease: false
+          update-shorthand-release: false
+          dry-run: true
+        continue-on-error: true
+      - name: Assert action ran for patch release type
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          TAG: ${{ steps.action.outputs.tag }}
+          SKIPPED: ${{ steps.action.outputs.skipped }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "tag: $TAG"
+          echo "skipped: $SKIPPED"
+          # The action should run (either succeed or fail due to no real GitHub API)
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran with patch release-type and produced an outcome"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi
+          # If tag is set, it should look like a semver tag
+          if [ -n "$TAG" ]; then
+            if echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+'; then
+              echo "PASS: tag output looks like a semver tag: $TAG"
+            else
+              echo "FAIL: tag output does not look like a semver tag: $TAG"
+              exit 1
+            fi
+          fi

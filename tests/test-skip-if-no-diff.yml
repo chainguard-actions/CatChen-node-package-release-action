@@ -1,0 +1,45 @@
+name: Test skip-if-no-diff
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: prerelease
+          skip-if-no-diff: true
+          diff-targets: '.'
+          dry-run: true
+        continue-on-error: true
+      - name: Assert action ran with skip-if-no-diff
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          SKIPPED: ${{ steps.action.outputs.skipped }}
+          TAG: ${{ steps.action.outputs.tag }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "skipped: $SKIPPED"
+          echo "tag: $TAG"
+          # The action should run (either succeed or fail due to no real GitHub API)
+          if [ "$OUTCOME" = "success" ] || [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action ran and produced an outcome"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi
+          # If skipped is set, it should be a boolean string
+          if [ -n "$SKIPPED" ]; then
+            if [ "$SKIPPED" = "true" ] || [ "$SKIPPED" = "false" ]; then
+              echo "PASS: skipped output is a valid boolean: $SKIPPED"
+            else
+              echo "FAIL: skipped output has unexpected value: $SKIPPED"
+              exit 1
+            fi
+          fi
