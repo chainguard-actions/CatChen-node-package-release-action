@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v2.3.15 | [`v2.3.15`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.15) | [`50677bb`](https://github.com/CatChen/node-package-release-action/commit/50677bb8182803460885619c94a17539017b68d7) |
+| v2.3.15-58 | [`v2.3.15-58`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.15-58) | [`601c510`](https://github.com/CatChen/node-package-release-action/commit/601c51019f9534aa9b980e1209bec1ac742a8dfa) |
 | v2.3.16 | [`v2.3.16`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.16) | [`65c2774`](https://github.com/CatChen/node-package-release-action/commit/65c2774e26b6e1877f39a25af3e0cbedc142bfd3) |
 
 ## Privacy
