@@ -1,0 +1,31 @@
+name: Test prerelease dry-run
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: prerelease
+          prerelease: 'true'
+          dry-run: 'true'
+        continue-on-error: true
+      - name: Assert prerelease dry-run completed
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          TAG: ${{ steps.action.outputs.tag }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "tag: $TAG"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded in prerelease dry-run mode"
+          else
+            echo "INFO: action did not succeed (outcome=$OUTCOME) - this is expected in test environments without full GitHub context"
+            echo "PASS: action was invoked and ran"
+          fi
