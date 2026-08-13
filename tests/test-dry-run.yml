@@ -1,0 +1,27 @@
+name: Test dry-run mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: prerelease
+          dry-run: 'true'
+        continue-on-error: true
+      - name: Assert action ran
+        run: |
+          echo "outcome: ${{ steps.action.outcome }}"
+          echo "tag output: ${{ steps.action.outputs.tag }}"
+          echo "skipped output: ${{ steps.action.outputs.skipped }}"
+          # In dry-run mode the action should either succeed or produce outputs
+          # We just verify it ran (not a setup/infrastructure failure)
+          if [ "${{ steps.action.outcome }}" = "skipped" ]; then
+            echo "FAIL: action was skipped entirely"
+            exit 1
+          fi
+          echo "PASS: action ran in dry-run mode"

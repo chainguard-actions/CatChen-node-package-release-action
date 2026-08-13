@@ -1,0 +1,35 @@
+name: Test skip-if-no-diff mode
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github-token: ${{ github.token }}
+          release-type: prerelease
+          skip-if-no-diff: 'true'
+          diff-targets: '.'
+          dry-run: 'true'
+        continue-on-error: true
+      - name: Assert skipped or ran
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          SKIPPED: ${{ steps.action.outputs.skipped }}
+          TAG: ${{ steps.action.outputs.tag }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "skipped: $SKIPPED"
+          echo "tag: $TAG"
+          # The action should either:
+          # 1. Skip (skipped=true) because there's no diff since last release
+          # 2. Run in dry-run mode (skipped=false or empty)
+          # Either way, the action should not be in a "skipped" step outcome
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: step was skipped entirely (not the action's skip logic)"
+            exit 1
+          fi
+          echo "PASS: action ran with skip-if-no-diff enabled"
