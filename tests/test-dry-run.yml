@@ -1,4 +1,4 @@
-name: Test skip-if-no-diff mode
+name: Test dry-run mode
 on:
   workflow_dispatch:
 jobs:
@@ -24,30 +24,23 @@ jobs:
         uses: .
         continue-on-error: true
         with:
-          release-type: prerelease
-          skip-if-no-diff: 'true'
-          diff-targets: '.'
+          release-type: patch
           dry-run: 'true'
+          prerelease: 'false'
 
-      - name: Assert action ran and either set skipped output or failed gracefully
+      - name: Assert action ran and either succeeded or failed gracefully on sentinel repo
         env:
           OUTCOME: ${{ steps.action.outcome }}
-          SKIPPED: ${{ steps.action.outputs.skipped }}
           TAG: ${{ steps.action.outputs.tag }}
         run: |
           echo "outcome: $OUTCOME"
-          echo "skipped: $SKIPPED"
           echo "tag: $TAG"
           if [ "$OUTCOME" = "success" ]; then
-            # If skipped is true, no tag is expected
-            if [ "$SKIPPED" = "true" ]; then
-              echo "PASS: action skipped as expected (no diff detected)"
-            elif [ -n "$TAG" ]; then
-              echo "PASS: action proceeded with tag '$TAG' (no previous release to compare)"
-            else
-              echo "FAIL: action succeeded but neither skipped nor produced a tag"
+            if [ -z "$TAG" ]; then
+              echo "FAIL: action succeeded but tag output is empty"
               exit 1
             fi
+            echo "PASS: dry-run succeeded with tag '$TAG'"
           elif [ "$OUTCOME" = "failure" ]; then
             echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
           else
