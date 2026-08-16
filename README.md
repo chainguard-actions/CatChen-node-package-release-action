@@ -14,6 +14,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v2.3.17 | [`v2.3.17`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.17) | [`abd25da`](https://github.com/CatChen/node-package-release-action/commit/abd25dab48e139818405282e7b60b5d2a0fcec2e) |
 | v2.3.18 | [`v2.3.18`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.18) | [`61b8e70`](https://github.com/CatChen/node-package-release-action/commit/61b8e70ffac0e346e91b4a3e015bd0be11ecc8e7) |
 | v2.3.19 | [`v2.3.19`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.19) | [`947db5a`](https://github.com/CatChen/node-package-release-action/commit/947db5a64710eee196fbc6b6593eb71efc3bccff) |
+| v2.3.20 | [`v2.3.20`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.20) | [`2b913ea`](https://github.com/CatChen/node-package-release-action/commit/2b913ea64ed3c275879f760c392f2b39918fc7ee) |
 
 ## Privacy
 
