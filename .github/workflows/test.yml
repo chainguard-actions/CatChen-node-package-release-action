@@ -1,0 +1,111 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, '[0-9]+-[0-9]+-*']
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Dependabot']
+    types:
+      - completed
+  workflow_call:
+
+permissions:
+  contents: write
+
+concurrency: release-${{ github.event_name }}
+
+jobs:
+  test-with-package:
+    name: Test with Package
+    if: ${{ !startsWith(github.head_ref || github.event.workflow_run.head_branch, 'workflows/tests/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: '.nvmrc'
+          check-latest: true
+          cache: yarn
+
+      - name: Create test branch
+        env:
+          SHA: ${{ github.sha }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          TEST_BRANCH_NAME: ${{ format('workflows/tests/package/id-{0}/run-{1}/attempt-{2}/sha-{3}', github.run_id, github.run_number, github.run_attempt, github.sha) }}
+        run: |
+          echo "::notice::Run number is $RUN_NUMBER"
+          echo "::notice::Run attempt is $RUN_ATTEMPT"
+          echo "::notice::Test branch is $TEST_BRANCH_NAME"
+          git checkout -b "$TEST_BRANCH_NAME"
+
+      - name: Test
+        id: test
+        uses: ./
+        with:
+          release-type: prerelease
+          prerelease: true
+
+      - name: Clean up
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          TEST_BRANCH_NAME: ${{ format('workflows/tests/package/id-{0}/run-{1}/attempt-{2}/sha-{3}', github.run_id, github.run_number, github.run_attempt, github.sha) }}
+          TAG: ${{ steps.test.outputs.tag }}
+        run: |
+          git push -d origin "$TEST_BRANCH_NAME" || true # Success workflow have the branch deleted already
+          gh release delete "$TAG" --yes
+
+  test-without-package:
+    name: Test without Package
+    needs: [test-with-package]
+    if: ${{ !startsWith(github.head_ref || github.event.workflow_run.head_branch, 'workflows/tests/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version-file: '.nvmrc'
+          check-latest: true
+          cache: yarn
+
+      - name: Create test branch
+        env:
+          SHA: ${{ github.sha }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          TEST_BRANCH_NAME: ${{ format('workflows/tests/no-package/id-{0}/run-{1}/attempt-{2}/sha-{3}', github.run_id, github.run_number, github.run_attempt, github.sha) }}
+        run: |
+          echo "::notice::Run number is $RUN_NUMBER"
+          echo "::notice::Run attempt is $RUN_ATTEMPT"
+          echo "::notice::Test branch is $TEST_BRANCH_NAME"
+          git checkout -b "$TEST_BRANCH_NAME"
+
+      - name: Test
+        id: test
+        uses: ./
+        with:
+          release-type: prerelease
+          directory: 'src/'
+          prerelease: true
+
+      - name: Clean up
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          TEST_BRANCH_NAME: ${{ format('workflows/tests/no-package/id-{0}/run-{1}/attempt-{2}/sha-{3}', github.run_id, github.run_number, github.run_attempt, github.sha) }}
+          TAG: ${{ steps.test.outputs.tag }}
+        run: |
+          git push -d origin "$TEST_BRANCH_NAME" || true # Success workflow have the branch deleted already
+          gh release delete "$TAG" --yes
