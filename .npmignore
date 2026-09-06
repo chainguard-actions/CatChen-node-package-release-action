@@ -1,0 +1,17 @@
+.gitattributes
+.github/
+.husky/
+.vscode/
+.nvmrc
+.prettierignore
+.prettierrc.json
+action.yml
+assets/
+bundle/
+src/
+tests/
+eslint.config.js
+tsconfig.json
+.cursor/
+AGENTS.md
+CLAUDE.md
