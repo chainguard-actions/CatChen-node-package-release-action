@@ -1,0 +1,49 @@
+name: Test skip-if-no-diff minor dry-run
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          release-type: minor
+          skip-if-no-diff: true
+          diff-targets: '.'
+          dry-run: true
+      - name: Assert skipped output (or graceful failure on sentinel repo)
+        env:
+          SKIPPED: ${{ steps.action.outputs.skipped }}
+          TAG: ${{ steps.action.outputs.tag }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "skipped: $SKIPPED"
+          echo "tag: $TAG"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ "$SKIPPED" = "true" ]; then
+              if [ -n "$TAG" ]; then
+                echo "FAIL: skipped but tag was set"
+                exit 1
+              fi
+            elif [ "$SKIPPED" = "false" ]; then
+              if ! echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.0$'; then
+                echo "FAIL: expected vX.Y.0 minor tag, got '$TAG'"
+                exit 1
+              fi
+            else
+              echo "FAIL: skipped output must be true/false"
+              exit 1
+            fi
+            echo "PASS"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

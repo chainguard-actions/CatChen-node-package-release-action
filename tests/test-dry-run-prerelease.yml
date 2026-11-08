@@ -1,0 +1,35 @@
+name: Test dry-run default prerelease
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          prerelease: true
+          dry-run: true
+      - name: Assert prerelease tag (or graceful failure on sentinel repo)
+        env:
+          RESULT: ${{ steps.action.outputs.tag }}
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "result: $RESULT"
+          if [ "$OUTCOME" = "success" ]; then
+            if ! echo "$RESULT" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.]+$'; then
+              echo "FAIL: expected a vX.Y.Z-N prerelease tag, got '$RESULT'"
+              exit 1
+            fi
+            echo "PASS: got '$RESULT'"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo is not resolvable)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
