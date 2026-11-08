@@ -20,6 +20,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v2.3.22 | [`v2.3.22`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.22) | [`d086e2b`](https://github.com/CatChen/node-package-release-action/commit/d086e2bbc90c411df1d250189a04472bad3866cc) | [`HARDENING.md`](https://github.com/chainguard-actions/CatChen-node-package-release-action/blob/v2.3.22/HARDENING.md) |
 | v2.3.23 | [`v2.3.23`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.23) | [`275e965`](https://github.com/CatChen/node-package-release-action/commit/275e965dc08d9857b30ed3a98cdc962659354074) | [`HARDENING.md`](https://github.com/chainguard-actions/CatChen-node-package-release-action/blob/v2.3.23/HARDENING.md) |
 | v2.3.23-121 | [`v2.3.23-121`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.23-121) | [`03c6f6f`](https://github.com/CatChen/node-package-release-action/commit/03c6f6f1bb14fb8b37be240465f015e8fae31793) | [`HARDENING.md`](https://github.com/chainguard-actions/CatChen-node-package-release-action/blob/v2.3.23-121/HARDENING.md) |
+| v2.3.24 | [`v2.3.24`](https://github.com/chainguard-actions/CatChen-node-package-release-action/tree/v2.3.24) | [`6fee9a4`](https://github.com/CatChen/node-package-release-action/commit/6fee9a42bc7c8ee806166cdfe8be1a8ef9c759fc) | [`HARDENING.md`](https://github.com/chainguard-actions/CatChen-node-package-release-action/blob/v2.3.24/HARDENING.md) |
 
 ## Privacy
 
